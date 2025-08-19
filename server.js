@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 
 // Telegram Bot Config
 const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
-const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID';
+const CHAT_ID = 'YOUR_CHAT_ID';
 
 // Multer setup (memory storage)
 const storage = multer.memoryStorage();
@@ -22,7 +22,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     }
 
     const form = new FormData();
-    form.append('chat_id', TELEGRAM_CHAT_ID);
+    form.append('chat_id', CHAT_ID);
     form.append('photo', req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype,
