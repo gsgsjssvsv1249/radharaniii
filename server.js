@@ -1,52 +1,51 @@
 const express = require('express');
 const multer = require('multer');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const FormData = require('form-data');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-// Telegram Bot Config
-const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
-const CHAT_ID = 'YOUR_CHAT_ID';
+// Multer setup: store image in memory
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Multer setup (memory storage)
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// Use Railway environment variables
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.CHAT_ID;
+
+// Root route
+app.get('/', (req, res) => {
+  res.send('👋 Shivam’s Telegram Image Bot is live on Railway!');
+});
 
 // Upload route
 app.post('/upload', upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No image uploaded' });
-    }
+  if (!req.file) {
+    return res.status(400).send('❌ No image uploaded');
+  }
 
-    const form = new FormData();
-    form.append('chat_id', CHAT_ID);
-    form.append('photo', req.file.buffer, {
+  try {
+    const formData = new FormData();
+    formData.append('chat_id', TELEGRAM_CHAT_ID);
+    formData.append('photo', req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype,
     });
 
-    const telegramRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
-      method: 'POST',
-      body: form,
+    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+
+    await axios.post(telegramUrl, formData, {
+      headers: formData.getHeaders(),
     });
 
-    const result = await telegramRes.json();
-
-    if (!result.ok) {
-      console.error('Telegram error:', result);
-      return res.status(500).json({ error: 'Failed to send image to Telegram' });
-    }
-
-    res.json({ message: 'Image sent to Telegram!', telegram_response: result });
-  } catch (err) {
-    console.error('Upload error:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.send('✅ Image sent to Telegram successfully!');
+  } catch (error) {
+    console.error('Telegram error:', error.response?.data || error.message);
+    res.status(500).send('❌ Failed to send image to Telegram');
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Start server
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
 });
