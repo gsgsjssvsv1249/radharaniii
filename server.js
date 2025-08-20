@@ -26,7 +26,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
 
   try {
     const formData = new FormData();
-    formData.append('chat_id', TELEGRAM_CHAT_ID);
+    formData.append('chat_id', CHAT_ID);
     formData.append('photo', req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype,
